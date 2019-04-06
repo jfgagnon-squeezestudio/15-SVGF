@@ -139,6 +139,12 @@ void SVGFPass::renderGui(Gui* pGui)
 	int dirty = 0;
 	dirty |= (int)pGui->addCheckBox(mFilterEnabled ? "SVGF enabled" : "SVGF disabled", mFilterEnabled);
 
+	// jfgagnon
+	pGui->addText("");
+	pGui->addText("Debug.  Which");
+	pGui->addText("    buffer would you like to see?");
+	dirty |= (int)pGui->addIntVar("DebugBuffer", mShowIntermediateBuffer, -1, 10, 1);
+
 	pGui->addText("");
 	pGui->addText("Number of filter iterations.  Which");
 	pGui->addText("    iteration feeds into future frames?");
@@ -202,6 +208,25 @@ void SVGFPass::execute(RenderContext* pRenderContext)
 		// Swap resources so we're ready for next frame.
 		std::swap(mpCurReprojFbo, mpPrevReprojFbo);
 		pRenderContext->blit(mInputTex.linearZ->getSRV(), mInputTex.prevLinearZ->getRTV());
+
+		// jfgagnon
+		switch (mShowIntermediateBuffer)
+		{
+		// temporal reprojection direct
+		case 0: pRenderContext->blit(mpCurReprojFbo->getColorTexture(0)->getSRV(), pDst->getRTV()); break;
+
+		// temporal reprojection indirect
+		case 1: pRenderContext->blit(mpCurReprojFbo->getColorTexture(1)->getSRV(), pDst->getRTV()); break;
+
+		// temporal reprojection moments
+		case 2: pRenderContext->blit(mpCurReprojFbo->getColorTexture(2)->getSRV(), pDst->getRTV()); break;
+
+		// temporal reprojection history length
+		case 3: pRenderContext->blit(mpCurReprojFbo->getColorTexture(3)->getSRV(), pDst->getRTV()); break;
+
+		// nothing to do
+		default: break;
+		}
 	}
 	else
 	{

@@ -58,6 +58,9 @@ protected:
 	float   mAlpha               = 0.05f;
 	float   mMomentsAlpha        = 0.2f;
 
+	// jfgagnon
+	int32_t mShowIntermediateBuffer = -1;
+
 	// SVGF passes
 	FullscreenLaunch::SharedPtr         mpReprojection;
 	FullscreenLaunch::SharedPtr         mpAtrous;
