@@ -73,12 +73,6 @@
     <ClInclude Include="Passes\SVGFPass.h">
       <Filter>Passes</Filter>
     </ClInclude>
-    <ClInclude Include="Data\SVGF\SVGFCommon.h">
-      <Filter>Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="Data\SVGF\SVGFEdgeStoppingFunctions.h">
-      <Filter>Shaders</Filter>
-    </ClInclude>
     <ClInclude Include="..\SharedUtils\RasterLaunch.h">
       <Filter>SharedUtils</Filter>
     </ClInclude>
@@ -125,19 +119,23 @@
     <None Include="Data\SVGF\SVGFReproject.ps.hlsl">
       <Filter>Shaders</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Data\SVGF\SVGFAtrous.ps.hlsl">
+    <None Include="Data\SVGFSampleOtherPasses\gBufferSVGF.vs.hlsl">
       <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Data\SVGF\SVGFCombineUnfiltered.ps.hlsl">
+    </None>
+    <None Include="Data\SVGFSampleOtherPasses\ggxGlobalIllumination.rt.hlsl">
       <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Data\SVGFSampleOtherPasses\gBufferSVGF.vs.hlsl">
+    </None>
+    <None Include="Data\SVGF\SVGFAtrous.ps.hlsl">
       <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Data\SVGFSampleOtherPasses\ggxGlobalIllumination.rt.hlsl">
+    </None>
+    <None Include="Data\SVGF\SVGFCombineUnfiltered.ps.hlsl">
       <Filter>Shaders</Filter>
-    </FxCompile>
+    </None>
+    <None Include="Data\SVGF\SVGFCommon.h">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFEdgeStoppingFunctions.h">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

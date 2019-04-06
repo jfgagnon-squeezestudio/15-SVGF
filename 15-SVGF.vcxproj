@@ -89,7 +89,7 @@
     </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}</ProjectGuid>
+    <ProjectGuid>{FBECA57E-EED6-4A95-AEC9-6465B465597C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>DXRT</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
