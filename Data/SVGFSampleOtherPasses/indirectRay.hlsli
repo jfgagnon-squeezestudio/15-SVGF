@@ -16,15 +16,14 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-// The payload structure for our indirect rays
 struct IndirectRayPayload
 {
-	float3 color;    // The (returned) color in the ray's direction
-	uint   rndSeed;  // Our random seed, so we pick uncorrelated RNGs along our ray
-	uint   rayDepth; // What is the depth of our current ray?
+	float3 color;
+	uint   rndSeed;
 };
 
-float3 shootIndirectRay(float3 rayOrigin, float3 rayDir, float minT, uint curPathLen, uint seed, uint curDepth)
+// Utility to shoot an indirect ray using the DXR ray shaders defined in this header
+float3 shootIndirectRay(float3 rayOrigin, float3 rayDir, float minT, uint curPathLen, uint seed)
 {
 	// Setup our indirect ray
 	RayDesc rayColor;
@@ -33,11 +32,10 @@ float3 shootIndirectRay(float3 rayOrigin, float3 rayDir, float minT, uint curPat
 	rayColor.TMin = minT;         // The closest distance we'll count as a hit
 	rayColor.TMax = 1.0e38f;      // The farthest distance we'll count as a hit
 
-	// Initialize the ray's payload data with black return color and the current rng seed
+								  // Initialize the ray's payload data with black return color and the current rng seed
 	IndirectRayPayload payload;
 	payload.color = float3(0, 0, 0);
 	payload.rndSeed = seed;
-	payload.rayDepth = curDepth + 1;
 
 	// Trace our ray to get a color in the indirect direction.  Use hit group #1 and miss shader #1
 	TraceRay(gRtScene, 0, 0xFF, 1, hitProgramCount, 1, rayColor, payload);
@@ -45,6 +43,7 @@ float3 shootIndirectRay(float3 rayOrigin, float3 rayDir, float minT, uint curPat
 	// Return the color we got from our ray
 	return payload.color;
 }
+
 
 [shader("miss")]
 void IndirectMiss(inout IndirectRayPayload rayData)
@@ -68,155 +67,28 @@ void IndirectAnyHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectio
 		IgnoreHit();
 }
 
-float3 lambertianDirect(inout uint rndSeed, float3 hit, float3 norm, float3 difColor)
-{
-	// Pick a random light from our scene to shoot a shadow ray towards
-	int lightToSample = min(int(nextRand(rndSeed) * gLightsCount), gLightsCount - 1);
-
-	// Query the scene to find info about the randomly selected light
-	float distToLight;
-	float3 lightIntensity;
-	float3 toLight;
-	getLightData(lightToSample, hit, toLight, lightIntensity, distToLight);
-
-	// Compute our lambertion term (L dot N)
-	float LdotN = saturate(dot(norm, toLight));
-
-	// Shoot our shadow ray to our randomly selected light
-	float shadowMult = float(gLightsCount) * shadowRayVisibility(hit, toLight, gMinT, distToLight);
-
-	// Return the Lambertian shading color using the physically based Lambertian term (albedo / pi)
-	return shadowMult * LdotN * lightIntensity * difColor / M_PI;
-}
-
-float3 lambertianIndirect(inout uint rndSeed, float3 hit, float3 norm, float3 difColor, uint rayDepth)
-{
-	// Shoot a randomly selected cosine-sampled diffuse ray.
-	float3 L = getCosHemisphereSample(rndSeed, norm);
-	float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, rayDepth);
-
-	// Accumulate the color: (NdotL * incomingLight * difColor / pi) 
-	// Probability of sampling:  (NdotL / pi)
-	return bounceColor * difColor;
-}
-
-float3 ggxDirect(inout uint rndSeed, float3 hit, float3 N, float3 V, float3 dif, float3 spec, float rough)
-{
-	// Pick a random light from our scene to shoot a shadow ray towards
-	int lightToSample = min(int(nextRand(rndSeed) * gLightsCount), gLightsCount - 1);
-
-	// Query the scene to find info about the randomly selected light
-	float distToLight;
-	float3 lightIntensity;
-	float3 L;
-	getLightData(lightToSample, hit, L, lightIntensity, distToLight);
-
-	// Compute our lambertion term (N dot L)
-	float NdotL = saturate(dot(N, L));
-
-	// Shoot our shadow ray to our randomly selected light
-	float shadowMult = float(gLightsCount) * shadowRayVisibility(hit, L, gMinT, distToLight);
-
-	// Compute half vectors and additional dot products for GGX
-	float3 H = normalize(V + L);
-	float NdotH = saturate(dot(N, H));
-	float LdotH = saturate(dot(L, H));
-	float NdotV = saturate(dot(N, V));
-
-	// Evaluate terms for our GGX BRDF model
-	float  D = ggxNormalDistribution(NdotH, rough);
-	float  G = ggxSchlickMaskingTerm(NdotL, NdotV, rough);
-	float3 F = schlickFresnel(spec, LdotH);
-
-	// Evaluate the Cook-Torrance Microfacet BRDF model
-	//     Cancel out NdotL here & the next eq. to avoid catastrophic numerical precision issues.
-	float3 ggxTerm = D*G*F / (4 * NdotV /* * NdotL */);
-
-	// Compute our final color (combining diffuse lobe plus specular GGX lobe)
-	return shadowMult * lightIntensity * ( /* NdotL * */ ggxTerm + NdotL * dif / M_PI);
-}
-
-float3 ggxIndirect(inout uint rndSeed, float3 hit, float3 N, float3 noNormalN, float3 V, float3 dif, float3 spec, float rough, uint rayDepth)
-{
-	// We have to decide whether we sample our diffuse or specular/ggx lobe.
-	float probDiffuse = probabilityToSampleDiffuse(dif, spec);
-	float chooseDiffuse = (nextRand(rndSeed) < probDiffuse);
-
-	// We'll need NdotV for both diffuse and specular...
-	float NdotV = saturate(dot(N, V));
-
-	// If we randomly selected to sample our diffuse lobe...
-	if (chooseDiffuse)
-	{
-		// Shoot a randomly selected cosine-sampled diffuse ray.
-		float3 L = getCosHemisphereSample(rndSeed, N);
-		float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, rayDepth);
-
-		// Check to make sure our randomly selected, normal mapped diffuse ray didn't go below the surface.
-		if (dot(noNormalN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
-
-		// Accumulate the color: (NdotL * incomingLight * dif / pi) 
-		// Probability of sampling:  (NdotL / pi) * probDiffuse
-		return bounceColor * dif / probDiffuse;
-	}
-	// Otherwise we randomly selected to sample our GGX lobe
-	else
-	{
-		// Randomly sample the NDF to get a microfacet in our BRDF to reflect off of
-		float3 H = getGGXMicrofacet(rndSeed, rough, N);
-
-		// Compute the outgoing direction based on this (perfectly reflective) microfacet
-		float3 L = normalize(2.f * dot(V, H) * H - V);
-
-		// Compute our color by tracing a ray in this direction
-		float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, rayDepth);
-
-		// Check to make sure our randomly selected, normal mapped diffuse ray didn't go below the surface.
-		if (dot(noNormalN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
-
-		// Compute some dot products needed for shading
-		float  NdotL = saturate(dot(N, L));
-		float  NdotH = saturate(dot(N, H));
-		float  LdotH = saturate(dot(L, H));
-
-		// Evaluate our BRDF using a microfacet BRDF model
-		float  D = ggxNormalDistribution(NdotH, rough);          // The GGX normal distribution
-		float  G = ggxSchlickMaskingTerm(NdotL, NdotV, rough);   // Use Schlick's masking term approx
-		float3 F = schlickFresnel(spec, LdotH);                  // Use Schlick's approx to Fresnel
-		float3 ggxTerm = D * G * F / (4 * NdotL * NdotV);        // The Cook-Torrance microfacet BRDF
-
-		// What's the probability of sampling vector H from getGGXMicrofacet()?
-		float  ggxProb = D * NdotH / (4 * LdotH);
-
-		// Accumulate the color:  ggx-BRDF * incomingLight * NdotL / probability-of-sampling
-		//    -> Should really simplify the math above.
-		return NdotL * bounceColor * ggxTerm / (ggxProb * (1.0f - probDiffuse));
-	}
-}
-
 [shader("closesthit")]
 void IndirectClosestHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 	// Run a helper functions to extract Falcor scene data for shading
-	ShadingData shadeData = getHitShadingData( attribs, WorldRayOrigin() );
+	ShadingData shadeData = getHitShadingData(attribs);
 
-    // Add emissive color
-    rayData.color = gEmitMult * shadeData.emissive.rgb;
+	////////// Which light are we randomly sampling?
+	////////int lightToSample = min(int(nextRand(rayData.rndSeed) * gLightsCount), gLightsCount - 1);
 
-	// Do direct illumination at this hit location
-    if (gDoDirectGI)
-    {
-        rayData.color += ggxDirect(rayData.rndSeed, shadeData.posW, shadeData.N, shadeData.V,
-            shadeData.diffuse, shadeData.specular, shadeData.roughness);
-    }
+	////////// Get our light information
+	////////float distToLight;
+	////////float3 lightIntensity;
+	////////float3 toLight;
+	////////getLightData(lightToSample, shadeData.posW, toLight, lightIntensity, distToLight);
 
-	// Do indirect illumination at this hit location (if we haven't traversed too far)
-	if (rayData.rayDepth < gMaxDepth)
-	{
-		// Use the same normal for the normal-mapped and non-normal mapped vectors... This means we could get light
-		//     leaks at secondary surfaces with normal maps due to indirect rays going below the surface.  This
-		//     isn't a huge issue, but this is a (TODO: fix)
-		rayData.color += ggxIndirect(rayData.rndSeed, shadeData.posW, shadeData.N, shadeData.N, shadeData.V,
-			shadeData.diffuse, shadeData.specular, shadeData.roughness, rayData.rayDepth);
-	}
+	////////// Compute our lambertion term (L dot N)
+	////////float LdotN = saturate(dot(shadeData.N, toLight));
+
+	////////// Shoot our shadow ray.
+	////////float shadowMult = float(gLightsCount) * shadowRayVisibility(shadeData.posW, toLight, gMinT, distToLight);
+
+	////////// Return the color illuminated by this randomly selected light
+	////////rayData.color = shadowMult * LdotN * lightIntensity * shadeData.diffuse / M_PI;
+	rayData.color = shadeData.diffuse;
 }

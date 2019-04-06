@@ -17,9 +17,9 @@
 **********************************************************************************************************************/
 
 // Falcor / Slang imports to include shared code and data structures
-import Shading;           // Imports ShaderCommon and DefaultVS, plus material evaluation
+__import Shading;           // Imports ShaderCommon and DefaultVS, plus material evaluation
 
-// Input texture that needs to be set by the C++ code
+// Input texture that needs to be set by the C++ code 
 Texture2D<float4> gEnvMap;
 
 // What's in our output G-buffer structure?  This is extremely fat and probably could be cut down, except
@@ -48,7 +48,7 @@ float2 wsVectorToLatLong(float3 dir)
 	return float2(u, v);
 }
 
-GBuffer main(float2 texC : TEXCOORD, float4 pos : SV_Position)
+GBuffer main(float2 texC : TEXCOORD, float4 pos : SV_Position) 
 {
 	// Compute our ray direction from the camera through the center of the pixel
 	float2 ndc = float2(2, -2) * texC + float2(-1, 1);

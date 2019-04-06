@@ -16,11 +16,12 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-// Payload for our shadow rays. 
+// Payload for our primary rays.  We really don't use this for this g-buffer pass
 struct ShadowRayPayload
 {
 	float visFactor;  // Will be 1.0 for fully lit, 0.0 for fully shadowed
 };
+
 
 // A utility function to trace a shadow ray and return 1 if no shadow and 0 if shadowed.
 //    -> Note:  This assumes the shadow hit programs and miss programs are index 0!
@@ -45,7 +46,7 @@ float shadowRayVisibility(float3 origin, float3 direction, float minT, float max
 	return payload.visFactor;
 }
 
-// What code is executed when our ray misses all geometry?
+// Standard shadow rays shaders
 [shader("miss")]
 void ShadowMiss(inout ShadowRayPayload rayData)
 {
@@ -53,7 +54,6 @@ void ShadowMiss(inout ShadowRayPayload rayData)
 	rayData.visFactor = 1.0f;
 }
 
-// What code is executed when our ray hits a potentially transparent surface?
 [shader("anyhit")]
 void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
@@ -62,8 +62,8 @@ void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAtt
 		IgnoreHit();
 }
 
-// What code is executed when we have a new closest hitpoint?
 [shader("closesthit")]
 void ShadowClosestHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 }
+

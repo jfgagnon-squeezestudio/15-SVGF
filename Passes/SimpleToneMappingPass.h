@@ -16,12 +16,15 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+// This render pass isn't particularly informative.  It allows you to apply tonemapping on an
+//     input buffer and output it into a specified output texture.  The tone mapping algorithms 
+//     are not demonstrated in either this RenderPass or associated HLSL code, as this pass 
+//     simply calls a Falcor utility pass that allows choosing your tonemapping algorithm from
+//     one of 5 or 6 built-in options.
+
 #pragma once
 #include "../SharedUtils/RenderPass.h"
-#include "../SharedUtils/SimpleVars.h"
-#include "../SharedUtils/FullscreenLaunch.h"
 
-// This RenderPass encapsulates Falcor's built-in tonemapping code and exposes its options via the GUI window
 class SimpleToneMappingPass : public ::RenderPass, inherit_shared_from_this<::RenderPass, SimpleToneMappingPass>
 {
 public:
@@ -42,7 +45,7 @@ protected:
 	// Override some functions that provide information to the RenderPipeline class
 	bool appliesPostprocess() override { return true; }
 
-
+      
 	GraphicsState::SharedPtr    mpGfxState;
 	std::string                 mInChannel;         ///< What resource are we expecting as our input?
 	std::string                 mOutChannel;        ///< What resource should we dump our output into?

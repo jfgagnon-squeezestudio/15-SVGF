@@ -19,7 +19,7 @@
 #include "SimpleToneMappingPass.h"
 
 SimpleToneMappingPass::SimpleToneMappingPass(const std::string &inBuf, const std::string &outBuf)
-	: mInChannel(inBuf), mOutChannel(outBuf), RenderPass("Tone Mapping", "Tone Mapping Options")
+	: mInChannel(inBuf), mOutChannel(outBuf), ::RenderPass("Simple Tone Mapping", "Tone Mapping Options")
 {
 }
 
@@ -27,35 +27,39 @@ bool SimpleToneMappingPass::initialize(RenderContext* pRenderContext, ResourceMa
 {
 	if (!pResManager) return false;
 
-	// Stash our resource manager; ask for the texture the developer asked us to accumulate
+	// Stash our resource manager; ask for the textures the developer asked for input & output
 	mpResManager = pResManager;
-	mpResManager->requestTextureResource(mInChannel);
-	mpResManager->requestTextureResource(mOutChannel);
+	mpResManager->requestTextureResources({ mInChannel, mOutChannel });
 
-	// The Falcor tonemapper can screw with DX pipeline state, so we'll want to create a disposible state object.
-	mpGfxState = GraphicsState::create();
+	// Set the default scene to load
+	mpResManager->setDefaultSceneName("Data/pink_room/pink_room.fscene");
 
-	// Falcor has a built-in utility for tonemapping.  Initialize that
+	// We'll use Falcor's built-in tonemapping utility.  Initialize that.
 	mpToneMapper = ToneMapping::create(ToneMapping::Operator::Clamp);
 
+	// The Falcor tonemapper messes with DX pipeline state, so create a state object for tonemapping
+	mpGfxState = GraphicsState::create();
 	return true;
 }
 
 void SimpleToneMappingPass::renderGui(Gui* pGui)
 {
 	// Let the Falcor tonemapper put it's UI in an appropriate spot
-	mpToneMapper->renderUI(pGui, nullptr);
+	mpToneMapper->renderUI(pGui, nullptr); 
 }
 
 void SimpleToneMappingPass::execute(RenderContext* pRenderContext)
 {
 	if (!mpResManager) return;
-
-	// Probably should do this once outside the main render loop.
-	Texture::SharedPtr srcTex = mpResManager->getTexture(mInChannel);
+   
+	// Create framebuffer objects for our input & output textures.  
+    Texture::SharedPtr srcTex = mpResManager->getTexture(mInChannel);
 	Fbo::SharedPtr dstFbo = mpResManager->createManagedFbo({ mOutChannel });
 
-	// Execute our tone mapping pass
+	// Execute our tone mapping pass.  We do a push/pop rendering state, since
+	//     Falcor's tonemapper is known to have side-effects on the current graphics
+	//     state...  Thus we want to use a new, disposible render state rather than 
+	//     risk weird errors in later passes in out pipeline.
 	pRenderContext->pushGraphicsState(mpGfxState);
 		mpToneMapper->execute(pRenderContext, srcTex, dstFbo);
 	pRenderContext->popGraphicsState();
