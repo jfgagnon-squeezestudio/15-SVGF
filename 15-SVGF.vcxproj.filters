@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="SVGF_Sample.cpp" />
+    <ClCompile Include="..\SharedUtils\FullscreenLaunch.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedUtils\RayLaunch.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedUtils\RenderingPipeline.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedUtils\RenderPass.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedUtils\ResourceManager.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedUtils\SceneLoaderWrapper.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedUtils\SimpleVars.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="Passes\GGXGlobalIllumination.cpp">
+      <Filter>Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Passes\GBufferForSVGF.cpp">
+      <Filter>Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Passes\SimpleToneMappingPass.cpp">
+      <Filter>Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Passes\SVGFPass.cpp">
+      <Filter>Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedUtils\RasterLaunch.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\SharedUtils\FullscreenLaunch.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharedUtils\RayLaunch.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharedUtils\RenderingPipeline.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharedUtils\RenderPass.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharedUtils\ResourceManager.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharedUtils\SceneLoaderWrapper.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharedUtils\SimpleVars.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="Passes\GGXGlobalIllumination.h">
+      <Filter>Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Passes\GBufferForSVGF.h">
+      <Filter>Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Passes\SimpleToneMappingPass.h">
+      <Filter>Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Passes\SVGFPass.h">
+      <Filter>Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Data\SVGF\SVGFCommon.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Data\SVGF\SVGFEdgeStoppingFunctions.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharedUtils\RasterLaunch.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Passes">
+      <UniqueIdentifier>{adda2fdc-bd9a-42b4-833b-be9481879e53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SharedUtils">
+      <UniqueIdentifier>{769a3914-132c-4590-b08e-edeaee125872}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{ce35b525-8e21-4f14-8b8e-941a9153cf04}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\SVGFSampleOtherPasses\ggxGlobalIlluminationUtils.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGFSampleOtherPasses\indirectRay.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGFSampleOtherPasses\standardShadowRay.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGFSampleOtherPasses\clearGBuffer.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGFSampleOtherPasses\gBufferSVGF.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGFSampleOtherPasses\svgfGBufData.h">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFFilterMoments.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFModulate.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFPackNormal.h">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFReproject.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Data\SVGF\SVGFAtrous.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Data\SVGF\SVGFCombineUnfiltered.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Data\SVGFSampleOtherPasses\gBufferSVGF.vs.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Data\SVGFSampleOtherPasses\ggxGlobalIllumination.rt.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
