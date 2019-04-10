@@ -31,9 +31,6 @@ bool SimpleToneMappingPass::initialize(RenderContext* pRenderContext, ResourceMa
 	mpResManager = pResManager;
 	mpResManager->requestTextureResources({ mInChannel, mOutChannel });
 
-	// Set the default scene to load
-	mpResManager->setDefaultSceneName("Data/pink_room/pink_room.fscene");
-
 	// We'll use Falcor's built-in tonemapping utility.  Initialize that.
 	mpToneMapper = ToneMapping::create(ToneMapping::Operator::Clamp);
 
